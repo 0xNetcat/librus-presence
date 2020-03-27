@@ -1,6 +1,6 @@
 # Python libs
 import sys
-from time import gmtime, strftime, sleep
+from time import strftime, sleep
 import argparse
 import os
 
@@ -52,16 +52,14 @@ class Presence():
         self.driver.find_element(By.LINK_TEXT, "Zaloguj").click()
         self.driver.switch_to.frame(0)
         print("[Login] Switched to login frame")
-        # Enter username
-        self.driver.find_element(By.ID, "Login").click()
-        self.driver.find_element(By.ID, "Login").send_keys(self.username)
-        print("[Login] Entered username")
-        # Enter password
-        self.driver.find_element(By.ID, "Pass").click()
-        self.driver.find_element(By.ID, "Pass").send_keys(self.password)
-        print("[Login] Entered password")
-        self.driver.find_element(By.ID, "LoginBtn").click()
         sleep(2)
+        self.driver.find_element(By.ID, "Login").click()
+        self.driver.find_element(By.ID, "Login").send_keys(self.username) # Send username to input field
+        print("[Login] Sending username")
+        self.driver.find_element(By.ID, "Pass").click()
+        self.driver.find_element(By.ID, "Pass").send_keys(self.password) # Send password to input field
+        print("[Login] Sending password")
+        self.driver.find_element(By.ID, "LoginBtn").click()
         print("[Login] Finished")
 
     def check_messages(self):
@@ -83,10 +81,11 @@ class Presence():
     def _read_messages(self):
         for index, message in enumerate(self.unread_messages):
             self.driver.get(message) # Go to message link
+            print(f"Reading message numer {index}")
+            verbose(f"Message link is {message}")
             # Save screenshot of message in homepath
             self.driver.save_screenshot(os.path.join(os.environ['HOMEPATH'], f'wiadomosc_librus{strftime("%Y-%m-%d_%H-%M-%S")}.png'))
             self.unread_messages.pop(index) # Remove readed message from array
-            sleep(2)
 
 if __name__ == "__main__":
     presence = Presence()
@@ -96,7 +95,10 @@ if __name__ == "__main__":
         presence.login()
         schedule.every(1).minutes.do(presence.check_messages)
         while True:
+            verbose("Starting the loop ∞")
             schedule.run_pending()
             sleep(1)
+    except KeyboardInterrupt:
+        print("Bye ;)")
     finally:
         presence.quit()
