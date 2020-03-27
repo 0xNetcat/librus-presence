@@ -14,7 +14,7 @@
 ### Usage
 `python3 presence.py -u LIBRUS_USERNAME -p LIBRUS_PASSWORD`
 
-### REquired arguments
+### Required arguments
 -p/--password - librus password
 -u/--username - librus username
 
