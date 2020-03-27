@@ -1,7 +1,5 @@
 # librus-presence
 
-## I am not sure if this is working. I will test this later this week
-
 ### Requirements
 
 * [Python 3](https://www.python.org/)
