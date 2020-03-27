@@ -41,7 +41,7 @@ class Presence():
             print("[Setup] Starting in normal mode")
         self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(5)
-        print("[Setup] Finished")
+        verbose("[Setup] Finished")
 
     def quit(self):
         self.driver.quit()
@@ -51,16 +51,15 @@ class Presence():
         self.driver.find_element(By.LINK_TEXT, "LIBRUS Synergia").click()
         self.driver.find_element(By.LINK_TEXT, "Zaloguj").click()
         self.driver.switch_to.frame(0)
-        print("[Login] Switched to login frame")
-        sleep(2)
+        verbose("[Login-Form] Switched to login frame")
         self.driver.find_element(By.ID, "Login").click()
         self.driver.find_element(By.ID, "Login").send_keys(self.username) # Send username to input field
-        print("[Login] Sending username")
+        print("[Login-Form] Sending username")
         self.driver.find_element(By.ID, "Pass").click()
         self.driver.find_element(By.ID, "Pass").send_keys(self.password) # Send password to input field
-        print("[Login] Sending password")
+        print("[Login-Form] Sending password")
         self.driver.find_element(By.ID, "LoginBtn").click()
-        print("[Login] Finished")
+        verbose("[Login-Form] Finished")
 
     def check_messages(self):
         count = 0
@@ -74,28 +73,25 @@ class Presence():
                 # Add unread messages to array
                 self.unread_messages.append(msg.find_element(By.CSS_SELECTOR, "td:nth-child(4) > a").get_attribute("href"))
                 count += 1
-        print(f"[Check messages] Found {count} unread messages")
-        verbose("[Check messages] Unread messages links:\n" + "\n".join(map(str, self.unread_messages)))
-        self._read_messages()
-
-    def _read_messages(self):
-        for index, message in enumerate(self.unread_messages):
-            self.driver.get(message) # Go to message link
-            print(f"Reading message {index}")
-            verbose(f"Message link is {message}")
+        print(f"[Check-Msg] Found {count} unread messages")
+        verbose("[Check-Msg] Unread messages links:\n" + "\n".join(map(str, self.unread_messages)))
+        for message in self.unread_messages[:]:
+            self.driver.get(str(message)) # Go to message link
+            print(f"[Check-Msg] Reading message - {strftime('%Y-%m-%d_%H-%M-%S')}")
+            verbose(f"[Check-Msg] Message link is {message}")
             # Save screenshot of message in homepath
-            self.driver.save_screenshot(os.path.join(os.environ['HOMEPATH'], f'wiadomosc_librus{strftime("%Y-%m-%d_%H-%M-%S")}.png'))
-            self.unread_messages.pop(index) # Remove readed message from array
+            self.driver.save_screenshot(os.path.join(os.environ["HOMEPATH"], f"msg_librus{strftime('%Y-%m-%d_%H-%M-%S')}.png"))
+            self.unread_messages.remove(message) # Remove item from array
 
 if __name__ == "__main__":
     presence = Presence()
-
     try:
         presence.setup()
         presence.login()
+        print("[Main] Starting the loop ∞")
+        presence.check_messages() # Run one time before starting the loop
         schedule.every(1).minutes.do(presence.check_messages)
-        while True:
-            verbose("Starting the loop ∞")
+        while True:    
             schedule.run_pending()
             sleep(1)
     except KeyboardInterrupt:
