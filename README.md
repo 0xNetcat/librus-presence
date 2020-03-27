@@ -4,9 +4,9 @@
 
 ### Requirements
 
-1. [Python 3](https://www.python.org/)
-2. [Chrome Driver](https://sites.google.com/a/chromium.org/chromedriver/downloads)
-3. [Google Chrome](https://www.google.com/chrome/)
+* [Python 3](https://www.python.org/)
+* [Chrome Driver](https://sites.google.com/a/chromium.org/chromedriver/downloads)
+* [Google Chrome](https://www.google.com/chrome/)
 
 ### Installation
 1. `git clone https://github.com/kko7/librus-presence.git`
