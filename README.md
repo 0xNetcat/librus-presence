@@ -17,9 +17,9 @@
 `python3 presence.py -u LIBRUS_USERNAME -p LIBRUS_PASSWORD`
 
 ### Required arguments
--p/--password - librus password
--u/--username - librus username
+* -p/--password - librus password
+* -u/--username - librus username
 
 ### Optional arguments
--v/--verbose - debug mode
--hl/--headless - run environment without the full browser UI
+* -v/--verbose - debug mode
+* -hl/--headless - run environment without the full browser UI
