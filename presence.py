@@ -76,14 +76,15 @@ class Presence():
                 count += 1
         print(f"[Check messages] Found {count} unread messages")
         verbose("[Check messages] Unread messages links:\n" + "\n".join(map(str, self.unread_messages)))
+        self._read_messages()
 
-    def read_messages(self):
+    def _read_messages(self):
         for index, message in enumerate(self.unread_messages):
             self.driver.get(message) # Go to message link
-            self.unread_messages.pop(index) # Remove readed message from array
-            sleep(2)
             # Save screenshot of message in homepath
             self.driver.save_screenshot(os.path.join(os.environ['HOMEPATH'], f'wiadomosc_librus{strftime("%Y-%m-%d_%H-%M-%S")}.png'))
+            self.unread_messages.pop(index) # Remove readed message from array
+            sleep(2)
 
 if __name__ == "__main__":
     presence = Presence()
@@ -91,10 +92,9 @@ if __name__ == "__main__":
     try:
         presence.setup()
         presence.login()
-        schedule.every(1).minutes.do(lambda: presence.check_messages() or presence.read_messages())
+        schedule.every(1).minutes.do(presence.check_messages)
         while True:
             schedule.run_pending()
             sleep(1)
-
     finally:
         presence.quit()
