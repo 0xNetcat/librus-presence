@@ -34,11 +34,13 @@ class Presence():
         options = Options()
         if args.headless:
             options.add_argument("--headless")
+            options.add_argument("window-size=1920,1080")
             print("[Setup] Starting in headless mode")
         else:
             options = None
             print("[Setup] Starting in normal mode")
         self.driver = webdriver.Chrome(options=options)
+        self.driver.implicitly_wait(5)
         print("[Setup] Finished")
 
     def quit(self):
