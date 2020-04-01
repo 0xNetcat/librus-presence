@@ -8,12 +8,14 @@ import os
 import schedule
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options 
 
 # Argument parser configuration 
 parser = argparse.ArgumentParser(description="Gimme arguments")
 parser.add_argument("-u", "--username", help="Librus Synergia username", type=str, required=True)
 parser.add_argument("-p", "--password", help="Librus Synergia password", type=str, required=True)
+parser.add_argument("-m", "--message", help="Send message to teachers from self.teachers with body 'Jestem obecny'", action="store_true", required=False)
 parser.add_argument("-hl", "--headless", help="Start in headless mode", action="store_true", required=False)
 parser.add_argument("-v", "--verbose", help="Start in verbose mode", action="store_true", required=False) # debugging mode
 args = parser.parse_args()
@@ -28,7 +30,8 @@ class Presence():
         self.driver = None
         self.username = args.username
         self.password = args.password
-        self.unread_messages = []
+        self.unread_messages = ['https://synergia.librus.pl/wiadomosci/1/5/7689132/f0', 'https://synergia.librus.pl/wiadomosci/1/5/7415849/f0', 'https://synergia.librus.pl/wiadomosci/1/5/7251705/f0']
+        self.teachers = ['Iwanicki Janusz', 'Łobodzińska Aneta']
 
     def setup(self):
         options = Options()
@@ -40,6 +43,7 @@ class Presence():
             options = None
             print("[Setup] Starting in normal mode")
         self.driver = webdriver.Chrome(options=options)
+        self.driver.set_window_size(1382, 744)
         self.driver.implicitly_wait(5)
         verbose("[Setup] Finished")
 
@@ -47,19 +51,23 @@ class Presence():
         self.driver.quit()
 
     def login(self):
-        self.driver.get("https://portal.librus.pl/rodzina")
+        self.driver.get("https://portal.librus.pl/")
+        self.driver.find_element(By.LINK_TEXT, "Zaloguj jako").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".dropdown__checkbox").click()
+        self.driver.find_element(By.LINK_TEXT, "Rodzic lub uczeń").click()
         self.driver.find_element(By.LINK_TEXT, "LIBRUS Synergia").click()
         self.driver.find_element(By.LINK_TEXT, "Zaloguj").click()
         self.driver.switch_to.frame(0)
-        verbose("[Login-Form] Switched to login frame")
         self.driver.find_element(By.ID, "Login").click()
-        self.driver.find_element(By.ID, "Login").send_keys(self.username) # Send username to input field
-        print("[Login-Form] Sending username")
+        self.driver.find_element(By.ID, "Login").send_keys(self.username)
+        print("[Login] Entered username")
         self.driver.find_element(By.ID, "Pass").click()
-        self.driver.find_element(By.ID, "Pass").send_keys(self.password) # Send password to input field
-        print("[Login-Form] Sending password")
+        self.driver.find_element(By.ID, "Pass").send_keys(self.password)
+        print("[Login] Entered password")
         self.driver.find_element(By.ID, "LoginBtn").click()
-        verbose("[Login-Form] Finished")
+        sleep(5)
+        self.driver.switch_to.default_content()
+        self.driver.find_element(By.LINK_TEXT, "x").click()
 
     def check_messages(self):
         count = 0
@@ -76,11 +84,27 @@ class Presence():
         print(f"[Check-Msg] Found {count} unread messages")
         verbose("[Check-Msg] Unread messages links:\n" + "\n".join(map(str, self.unread_messages)))
         for message in self.unread_messages[:]:
-            self.driver.get(str(message)) # Go to message link
+            self.driver.get(message) # Go to message link
             print(f"[Check-Msg] Reading message - {strftime('%Y-%m-%d_%H-%M-%S')}")
             verbose(f"[Check-Msg] Message link is {message}")
-            # Save screenshot of message in homepath
-            self.driver.save_screenshot(os.path.join(os.environ["HOMEPATH"], f"msg_librus{strftime('%Y-%m-%d_%H-%M-%S')}.png"))
+            
+            # Send message to teacher
+            if args.message:
+                for teacher in self.teachers:
+                    if teacher in self.driver.find_element(By.CSS_SELECTOR,
+                        "#formWiadomosci > div > div > table > tbody > tr > td:nth-child(2) > table:nth-child(2) > tbody > tr:nth-child(1) > td:nth-child(2)"
+                    ).text:            
+                        print(f"[Check-Msg] Sending message to: {teacher}")
+                        self.driver.find_element(By.CSS_SELECTOR, "#formWiadomosci > div > div > table > tbody > tr > td:nth-child(2) > table.stretch.message-button-panel > tbody > tr > td > input.medium.ui-button.ui-widget.ui-state-default.ui-corner-all").click()
+                        msg_input = self.driver.find_element(By.ID, "tresc_wiadomosci")
+                        msg_input.send_keys(Keys.CONTROL + "a");
+                        msg_input.send_keys(Keys.DELETE);
+                        msg_input.send_keys("Jestem obecny")
+                        self.driver.find_element(By.NAME, "wyslij").click()
+                        sleep(2)
+
+            # Save screenshot
+            self.driver.save_screenshot(os.path.join(os.environ["HOMEPATH"], "Desktop", f"msg_librus{strftime('%Y-%m-%d_%H-%M-%S')}.png"))
             self.unread_messages.remove(message) # Remove item from array
 
 if __name__ == "__main__":
