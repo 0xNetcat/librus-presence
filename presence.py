@@ -30,7 +30,7 @@ class Presence():
         self.driver = None
         self.username = args.username
         self.password = args.password
-        self.unread_messages = ['https://synergia.librus.pl/wiadomosci/1/5/7689132/f0', 'https://synergia.librus.pl/wiadomosci/1/5/7415849/f0', 'https://synergia.librus.pl/wiadomosci/1/5/7251705/f0']
+        self.unread_messages = []
         self.teachers = ['Iwanicki Janusz', 'Łobodzińska Aneta']
 
     def setup(self):
@@ -43,7 +43,6 @@ class Presence():
             options = None
             print("[Setup] Starting in normal mode")
         self.driver = webdriver.Chrome(options=options)
-        self.driver.set_window_size(1382, 744)
         self.driver.implicitly_wait(5)
         verbose("[Setup] Finished")
 
@@ -100,7 +99,7 @@ class Presence():
                         msg_input.send_keys(Keys.CONTROL + "a");
                         msg_input.send_keys(Keys.DELETE);
                         msg_input.send_keys("Jestem obecny")
-                        self.driver.find_element(By.NAME, "wyslij").click()
+                        self.driver.find_element(By.CSS_SELECTOR, "#formWiadomosci > div > div > table > tbody > tr:nth-child(8) > td.right > input:nth-child(1)").click()
                         sleep(2)
 
             # Save screenshot
