@@ -89,7 +89,7 @@ class Presence():
             
             # Send message to teacher
             if args.message:
-                for teacher in self.teachers:
+                for teacher in self.teachers[:]:
                     if teacher in self.driver.find_element(By.CSS_SELECTOR,
                         "#formWiadomosci > div > div > table > tbody > tr > td:nth-child(2) > table:nth-child(2) > tbody > tr:nth-child(1) > td:nth-child(2)"
                     ).text:            
@@ -100,6 +100,7 @@ class Presence():
                         msg_input.send_keys(Keys.DELETE);
                         msg_input.send_keys("Jestem obecny")
                         self.driver.find_element(By.CSS_SELECTOR, "#formWiadomosci > div > div > table > tbody > tr:nth-child(8) > td.right > input:nth-child(1)").click()
+                        self.teachers.remove(teacher)
                         sleep(2)
 
             # Save screenshot
