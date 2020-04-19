@@ -31,7 +31,7 @@ class Presence():
         self.username = args.username
         self.password = args.password
         self.unread_messages = []
-        self.teachers = ['Iwanicki Janusz', 'Łobodzińska Aneta']
+        self.teachers = []
 
     def setup(self):
         options = Options()
